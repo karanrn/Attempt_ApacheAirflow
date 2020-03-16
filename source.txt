@@ -1,0 +1,14 @@
+Apache Airflow
+https://airflow.apache.org/docs/stable/index.html
+
+1. Connect Airflow with Snowflake using hooks
+https://itnext.io/connect-apache-airflow-to-snowflake-data-warehouse-37936a9edfa1
+
+2. Apache Airflow DAGs
+https://www.astronomer.io/guides/dags/
+
+######
+1. Set up SMTP (Gmail):
+https://stackoverflow.com/questions/51829200/how-to-set-up-airflow-send-email/51837049#51837049
+
+Airflow only executes job once successfully for the given time
