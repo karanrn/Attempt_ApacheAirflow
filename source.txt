@@ -3,9 +3,13 @@ https://airflow.apache.org/docs/stable/index.html
 
 1. Connect Airflow with Snowflake using hooks
 https://itnext.io/connect-apache-airflow-to-snowflake-data-warehouse-37936a9edfa1
+https://airflow.apache.org/docs/stable/_modules/airflow/contrib/hooks/snowflake_hook.html
 
 2. Apache Airflow DAGs
 https://www.astronomer.io/guides/dags/
+
+3. Operators and Hooks examples
+https://github.com/lowks/Airflow/blob/master/docs/tutorial.rst
 
 ######
 1. Set up SMTP (Gmail):

@@ -5,9 +5,8 @@ from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.mysql_operator import MySqlOperator
 from airflow.utils.dates import days_ago
-from datetime import datetime
 import os
-import random
+
 # from write_date_to_file import WriteToFile
 
 default_args = {
@@ -87,5 +86,6 @@ t4 = MySqlOperator(
     owner='airflow',
     dag=dag
 )
+
 # Dependancy
 t1 >> [t2, t3] >> t4
