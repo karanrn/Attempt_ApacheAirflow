@@ -35,10 +35,10 @@ def checkRecords(**kwargs):
     records = mysql_hook.get_records(sql)
     # Pushing to Task instance
     if len(records) == 0:
-        kwargs['ti'].xcom_push(key='check', value=False)
+        kwargs['task_instance'].xcom_push(key='check', value=False)
     else:
-        kwargs['ti'].xcom_push(key='check', value=True)
-        kwargs['ti'].xcom_push(key='recordcount', value=len(records))
+        kwargs['task_instance'].xcom_push(key='check', value=True)
+        kwargs['task_instance'].xcom_push(key='recordcount', value=len(records))
 
 def WriteToFile(**kwargs):
     # Path for output files
@@ -48,17 +48,17 @@ def WriteToFile(**kwargs):
         with open(path+file_name, "a+") as f:
             f.write("{}: {} records found for the day\n"\
                 .format(str(datetime.now()), \
-                str(kwargs['ti'].xcom_pull(task_ids='check_data_table', key='recordcount'))))
+                str(kwargs['task_instance'].xcom_pull(task_ids='check_data_table', key='recordcount'))))
     else:
         with open(path+file_name, "a+") as f:
             f.write("{}: No records found for the day\n".format(str(datetime.now())))
 
 def branching(**kwargs):
-    check = kwargs['ti'].xcom_pull(task_ids='check_data_table', key='check')
+    check = kwargs['task_instance'].xcom_pull(task_ids='check_data_table', key='check')
     if check:
-        return collect_data
+        return 'collect_data'
     else:
-        return empty_table
+        return 'empty_table'
 
 # Tasks
 check_data = PythonOperator(
@@ -72,7 +72,8 @@ empty_table = PythonOperator(
     task_id='empty_table',
     depends_on_past=False,
     python_callable=WriteToFile,
-    kwargs={'file_name': 'empty_log.log', 'chk': False},
+    op_kwargs={'file_name': 'empty_log.log', 'chk': False},
+    provide_context=True,
     email=['karan.nadagoudar@datagrokr.com'],
     email_on_failure=True,
     dag=dag
@@ -82,8 +83,9 @@ collect_data = PythonOperator(
     task_id='collect_data',
     depends_on_past=False,
     python_callable=WriteToFile,
-    kwargs={'file_name': 'data_log.log', 'chk': True},
+    op_kwargs={'file_name': 'data_log.log', 'chk': True},
     email=['karan.nadagoudar@datagrokr.com'],
+    provide_context=True,
     email_on_failure=True,
     dag=dag
 )
@@ -96,4 +98,6 @@ fork = BranchPythonOperator(
     dag=dag
 )
 
-check_data >> fork
+check_data.set_downstream(fork)
+fork.set_downstream(collect_data)
+fork.set_downstream(empty_table)
