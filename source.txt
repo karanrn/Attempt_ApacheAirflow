@@ -11,4 +11,6 @@ https://www.astronomer.io/guides/dags/
 1. Set up SMTP (Gmail):
 https://stackoverflow.com/questions/51829200/how-to-set-up-airflow-send-email/51837049#51837049
 
-Airflow only executes job once successfully for the given time
+Notes:
+1. Airflow only executes job once successfully for the given time
+2. airflow trigger_dag -r sample102 -e '2020-03-16 6:33:00+00:00' sample_workflow #Trigger dag externally
