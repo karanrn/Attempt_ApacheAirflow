@@ -37,7 +37,6 @@ def insert(**context):
         password = snowflake_password, account = snowflake_account, \
         database=database_name)
     cs = con.cursor()
-    #cs.execute('USE DATABASE %s;' % database_name)
 
     status_sql = """
 insert into public.stage_status values ({}, '{}', 'create_file', 'success');
@@ -48,9 +47,9 @@ insert into public.stage_status values ({}, '{}', 'create_file', 'success');
 
 def get_count(**context):
     con = snowflake.connector.connect(user = snowflake_username, \
-        password = snowflake_password, account = snowflake_account)
+        password = snowflake_password, account = snowflake_account,\
+        database=database_name)
     cs = con.cursor()
-    #cs.execute('USE DATABASE %s;' % database_name)
 
     get_count_sql = "select count(*) from public.stage_status;"
     
