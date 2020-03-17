@@ -10,6 +10,6 @@ Airflow scheduler runs the DAGs for the given/scheduled time, if the DAG run is 
 
 Further reading can be done here - <br>
 [1]: https://airflow.apache.org/docs/stable/index.html <br>
-[2]: [Airflow Operators and Hooks](https://github.com/lowks/Airflow/blob/master/docs/tutorial.rst)
-[3]: [Snowflake connector](https://docs.snowflake.net/manuals/user-guide/python-connector.html)
-[4]: [Connecting to Snowflake using Airflow](https://itnext.io/connect-apache-airflow-to-snowflake-data-warehouse-37936a9edfa1)
+[2]: [Airflow Operators and Hooks](https://github.com/lowks/Airflow/blob/master/docs/tutorial.rst) <br>
+[3]: [Snowflake connector](https://docs.snowflake.net/manuals/user-guide/python-connector.html) <br>
+[4]: [Connecting to Snowflake using Airflow](https://itnext.io/connect-apache-airflow-to-snowflake-data-warehouse-37936a9edfa1) <br>
