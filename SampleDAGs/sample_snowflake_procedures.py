@@ -6,6 +6,8 @@ from airflow.hooks.base_hook import BaseHook
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
 from airflow import AirflowException
+from airflow.utils.email import send_email_smtp
+from airflow.contrib.operators.slack_webhook_operator import SlackWebhookOperator
 
 # Logging 
 logging.basicConfig(level=logging.INFO)
@@ -36,6 +38,46 @@ dag = DAG(
     start_date=days_ago(1),
     schedule_interval=None
 )
+
+def send_slack_notification(context):
+    SLACK_CONN_ID = 'slack_conn'
+    slack_webhook_token = BaseHook.get_connection(SLACK_CONN_ID).password
+    slack_msg = """
+            :heavy_check_mark: Task successful. 
+            *Task*: {task}  
+            *Dag*: {dag} 
+            *Execution Time*: {exec_date}  
+            *Log Url*: {log_url} 
+            """.format(
+            task=context.get('task_instance').task_id,
+            dag=context.get('task_instance').dag_id,
+            ti=context.get('task_instance'),
+            exec_date=context.get('execution_date'),
+            log_url=context.get('task_instance').log_url,
+        )
+    alert = SlackWebhookOperator(
+        task_id='slack_notify',
+        http_conn_id=SLACK_CONN_ID,
+        webhook_token=slack_webhook_token,
+        message=slack_msg,
+        username='airflow')
+    return alert.execute(context=context)
+
+def send_email(context):
+    subject = "[Airflow] DAG {0} - Task {1}: Success".format(
+        context['task_instance_key_str'].split('__')[0],
+        context['task_instance_key_str'].split('__')[1]
+        )
+    html_content = """
+    DAG: {0}<br>
+    Task: {1}<br>
+    Succeeded on: {2}
+    """.format(
+        context['task_instance_key_str'].split('__')[0],
+        context['task_instance_key_str'].split('__')[1],
+        datetime.now()
+        )
+    send_email_smtp('karan.nadagoudar@datagrokr.com', subject, html_content)
 
 def load_merge_table(**context):
     con = snowflake.connector.connect(user = snowflake_username, \
@@ -78,7 +120,9 @@ def drop_merge_table(**context):
 with dag:
     load_table = PythonOperator(
         task_id="load_merge_table",
-        python_callable=load_merge_table
+        python_callable=load_merge_table,
+        email_on_failure=True,
+        on_success_callback=send_slack_notification
     )
 
     drop_table = PythonOperator(
