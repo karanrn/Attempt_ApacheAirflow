@@ -40,19 +40,19 @@ dag = DAG(
 )
 
 def send_slack_notification(context):
+    logger.info(context.get('task_instance').__dict__)
     SLACK_CONN_ID = 'slack_conn'
     slack_webhook_token = BaseHook.get_connection(SLACK_CONN_ID).password
     slack_msg = """
-            :heavy_check_mark: Task successful. 
-            *Task*: {task}  
-            *Dag*: {dag} 
-            *Execution Time*: {exec_date}  
-            *Log Url*: {log_url} 
+            :red_circle: Task Failure 
+*Task*: {task}  
+*Dag*: {dag}
+*Start Time*: {start_date}
+*Log Url*: {log_url} 
             """.format(
             task=context.get('task_instance').task_id,
             dag=context.get('task_instance').dag_id,
-            ti=context.get('task_instance'),
-            exec_date=context.get('execution_date'),
+            start_date=context.get('task_instance').start_date,
             log_url=context.get('task_instance').log_url,
         )
     alert = SlackWebhookOperator(
@@ -60,7 +60,8 @@ def send_slack_notification(context):
         http_conn_id=SLACK_CONN_ID,
         webhook_token=slack_webhook_token,
         message=slack_msg,
-        username='airflow')
+        username='airflow'
+        )
     return alert.execute(context=context)
 
 def send_email(context):
@@ -122,12 +123,13 @@ with dag:
         task_id="load_merge_table",
         python_callable=load_merge_table,
         email_on_failure=True,
-        on_success_callback=send_slack_notification
+        on_failure_callback=send_slack_notification
     )
 
     drop_table = PythonOperator(
         task_id="drop_merge_table", 
-        python_callable=drop_merge_table
+        python_callable=drop_merge_table,
+        on_failure_callback=send_slack_notification
     )
 
 load_table >> drop_table
