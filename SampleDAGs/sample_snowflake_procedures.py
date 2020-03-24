@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 default_args = {
     'owner' : 'airflow',
     'retries' : 1,
-    'retry_delay' : timedelta(minutes = 2),
-    'email_on_failure' : True,
-    'email_on_success' : True,
-    'email' : ['karan.nadagoudar@datagrokr.com']
+    'retry_delay' : timedelta(minutes = 2)
+    # 'email_on_failure' : True,
+    # 'email_on_success' : True,
+    # 'email' : ['karan.nadagoudar@datagrokr.com']
 }
 
 # Snowflake information
@@ -40,7 +40,6 @@ dag = DAG(
 )
 
 def send_slack_notification(context):
-    logger.info(context.get('task_instance').__dict__)
     SLACK_CONN_ID = 'slack_conn'
     slack_webhook_token = BaseHook.get_connection(SLACK_CONN_ID).password
     slack_msg = """
@@ -86,17 +85,20 @@ def load_merge_table(**context):
         database=database_name, schema=schema_name)
     cs = con.cursor()
 
-    status_sql = "call mergetableProc();"
+    load_sql = "call mergetableProc();"
     
-    status = cs.execute(status_sql).fetchall()[0][0]
-
-    cs.close()
-
-    if status == 'Done.':
-        logger.info("Procedure executed successfully")
-    else:
-        logger.error("Procedure failed with {}".format(str(status)))
+    try:
+        status = cs.execute(load_sql).fetchall()[0][0]
+        if status == 'Done.':
+            logger.info("Procedure executed successfully")
+        else:
+            logger.error("Procedure failed with {}".format(str(status)))
+            raise AirflowException("Failed procedure run.")
+    except Exception as ex:
+        logger.error("Procedure failed with {}".format(str(ex)))
         raise AirflowException("Failed procedure run.")
+    finally:
+        cs.close()
     
 
 def drop_merge_table(**context):
@@ -105,24 +107,26 @@ def drop_merge_table(**context):
         database=database_name, schema=schema_name)
     cs = con.cursor()
 
-    get_count_sql = "call dropmergetableProc();"
+    drop_sql = "call dropmergetableProc();"
     
-    status = cs.execute(get_count_sql).fetchall()[0][0]
-
-    cs.close()
-
-    if status == 'Done.':
-        logger.info("Procedure executed successfully")
-    else:
-        logger.error("Procedure failed with {}".format(str(status)))
+    try:
+        status = cs.execute(drop_sql).fetchall()[0][0]
+        if status == 'Done.':
+            logger.info("Procedure executed successfully")
+        else:
+            logger.error("Procedure failed with {}".format(str(status)))
+            raise AirflowException("Failed procedure run.")
+    except Exception as ex:
+        logger.error("Procedure failed with {}".format(str(ex)))
         raise AirflowException("Failed procedure run.")
+    finally:
+        cs.close()
 
 
 with dag:
     load_table = PythonOperator(
         task_id="load_merge_table",
         python_callable=load_merge_table,
-        email_on_failure=True,
         on_failure_callback=send_slack_notification
     )
 
