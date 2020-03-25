@@ -8,7 +8,10 @@ from airflow.utils.dates import days_ago
 from airflow import AirflowException
 from airflow.utils.email import send_email_smtp
 from airflow.contrib.operators.slack_webhook_operator import SlackWebhookOperator
+import statsd
 
+# Statsd
+statsd_client = statsd.StatsClient('localhost', 8125)
 # Logging 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,7 +39,8 @@ dag = DAG(
     dag_id="sample_snowflake_procedures", 
     default_args=default_args,
     start_date=days_ago(1),
-    schedule_interval=None
+    schedule_interval='*/20 * * * *',
+    catchup=False
 )
 
 def send_slack_notification(context):
@@ -79,6 +83,8 @@ def send_email(context):
         )
     send_email_smtp('karan.nadagoudar@datagrokr.com', subject, html_content)
 
+# Check the execution time of the task
+@statsd_client.timer('load_merge_table.time')
 def load_merge_table(**context):
     con = snowflake.connector.connect(user = snowflake_username, \
         password = snowflake_password, account = snowflake_account, \
@@ -100,7 +106,7 @@ def load_merge_table(**context):
     finally:
         cs.close()
     
-
+@statsd_client.timer('drop_merge_table.time')
 def drop_merge_table(**context):
     con = snowflake.connector.connect(user = snowflake_username, \
         password = snowflake_password, account = snowflake_account,\
