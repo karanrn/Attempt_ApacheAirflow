@@ -19,5 +19,19 @@ A brief understanding of [Airflow DAGs](https://www.astronomer.io/guides/dags/).
 
 ---
 ## For monitoring the DAGs and tasks
-Airflow can send metrics to [StatsD](https://airflow.apache.org/docs/stable/metrics.html).<br>
-StatsD can send data to backend service for further visualisation and analysis (ex. Datadog).
+Airflow can send metrics to [StatsD](https://github.com/statsd/statsd).<br>
+StatsD can send data to backend service for further visualisation and analysis (ex. Datadog). StatsD is composed of three components - client, server and backend. <br>
+It sends metrics in UDP packets, if metrics are very important one needs to use TCP connection/client for sending metrics (recently added to StatsD).
+
+**Useful commands:**
+To listen to StatsD connection on port 8125
+```
+while true; do nc -l localhost 8125; done
+```
+
+**Further reading on StatsD** - <br>
+[1]: [Setup Metrics for Airflow using StatsD](https://airflow.apache.org/docs/stable/metrics.html) <br>
+[2]: https://thenewstack.io/collecting-metrics-using-statsd-a-standard-for-real-time-monitoring/ <br>
+[3]: [Python StatsD documentation](https://statsd.readthedocs.io/en/v3.3/index.html) <br>
+[4]: https://sysdig.com/blog/monitoring-statsd-metrics/ <br>
+[5]: https://www.scalyr.com/blog/statsd-measure-anything-in-your-system/ <br>
