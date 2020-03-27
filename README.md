@@ -38,8 +38,10 @@ Setup - <br>
 1. [Airflow integration with DataDog](https://docs.datadoghq.com/integrations/airflow/)
 2. [Datadog agent setup/check](https://docs.datadoghq.com/getting_started/agent/?tab=datadogussite)
 
-<br>
+
+
 **Config and mapping files:**
+
 * Check the configuration file for airflow - [airflow.cfg](./airflow.cfg) <br>
 * And also check for Datadog and StatsD mapping - [datadog.yml](./datadog.yaml) <br>
 
