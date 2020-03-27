@@ -1,5 +1,5 @@
 # API Key is needed for datadog agent to communicate with host
-api_key: 48cce8e72ceda8d70e2b8f3a01b0e4bf
+# api_key: 
 
 # Host for sending data, by default it is sent to app.datadoghq.com
 site: datadoghq.com
