@@ -11,7 +11,10 @@ from airflow.contrib.operators.slack_webhook_operator import SlackWebhookOperato
 import statsd
 
 # Statsd
-statsd_client = statsd.TCPStatsClient('localhost', 8125, prefix='AirFlow')
+# TCP connection
+# statsd_client = statsd.TCPStatsClient('localhost', 8125, prefix='AirFlow')
+# UDP connection
+statsd_client = statsd.StatsClient('localhost', 8125, prefix='AirFlow')
 # Logging 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
